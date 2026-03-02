@@ -15,7 +15,7 @@ BURTS_GOLD = "#DFAF2B"
 # ------------------------------------------------------
 # STREAMLIT BASE STYLING
 # ------------------------------------------------------
-st.set_page_config(page_title="Burt’s Bees Trend Sensing Dashboard", layout="wide")
+st.set_page_config(page_title="Burt’s Bees Trend Sensing", layout="wide")
 
 st.markdown(f"""
     <style>
