@@ -4,34 +4,106 @@ import numpy as np
 import random
 
 # ------------------------------------------------------
-# BRAND COLORS (used only for emojis & headers)
+# BURT'S BEES BRAND COLORS (from uploaded logo image)
 # ------------------------------------------------------
+BURTS_YELLOW = "#F4C32D"
 BURTS_RED = "#C51F25"
+BURTS_DARK = "#4A2C2A"
+BURTS_OFFWHITE = "#FFF8E7"
+BURTS_GOLD = "#DFAF2B"
 
 # ------------------------------------------------------
-# PAGE CONFIG
+# STREAMLIT BASE STYLING
 # ------------------------------------------------------
 st.set_page_config(page_title="Burt’s Bees Trend Sensing Dashboard", layout="wide")
 
-if "selected_trend" not in st.session_state:
-    st.session_state.selected_trend = None
+st.markdown(f"""
+    <style>
+        .main {{
+            background-color: {BURTS_OFFWHITE};
+        }}
 
+        .header-bar {{
+            background-color: {BURTS_YELLOW};
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 3px solid {BURTS_RED};
+        }}
+
+        .header-title {{
+            color: {BURTS_RED};
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+        }}
+
+        h1, h2, h3, h4 {{
+            color: {BURTS_DARK} !important;
+        }}
+
+        .stMetric {{
+            background-color: {BURTS_YELLOW}50;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid {BURTS_RED}20;
+        }}
+
+        .insight-card {{
+            background-color: {BURTS_YELLOW};
+            border: 2px solid {BURTS_RED};
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-top: 18px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.08);
+        }}
+
+        .insight-header {{
+            background-color: {BURTS_RED};
+            color: white;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: inline-block;
+        }}
+
+        .insight-body {{
+            color: {BURTS_DARK};
+            font-size: 16px;
+            line-height: 1.45;
+        }}
+
+        .insight-row {{
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }}
+
+        .honey-icon {{
+            font-size: 32px;
+        }}
+    </style>
+""", unsafe_allow_html=True)
 
 # ------------------------------------------------------
-# HEADER
+# OPTIONAL: BURT'S BEES LOGO
 # ------------------------------------------------------
-st.markdown(
-    f"""
-    <h1 style="text-align:center; color:{BURTS_RED};">
-        Burt’s Bees Trend Sensing Dashboard
-    </h1>
-    """,
-    unsafe_allow_html=True
-)
-
+# Place the logo in the same folder as app.py and uncomment this:
+# st.image("burtsbees_logo.png", width=160)
 
 # ------------------------------------------------------
-# MOCK DATA
+# Header Bar
+# ------------------------------------------------------
+st.markdown("""
+<div class="header-bar">
+    <div class="header-title">Burt’s Bees Trend Sensing Dashboard</div>
+</div>
+""", unsafe_allow_html=True)
+
+# ------------------------------------------------------
+# HELPER FUNCTIONS
 # ------------------------------------------------------
 def generate_mock_trends():
     priorities = ["High", "Medium", "Low"]
@@ -47,107 +119,129 @@ def generate_mock_trends():
         rows.append({
             "Trend": t,
             "Priority": random.choice(priorities),
-            "Growth %": round(random.uniform(-20, 60), 2)
+            "Growth %": round(random.uniform(5, 60), 2),
+            "QoQ Change": random.choice(["Increasing", "Stable", "Declining"])
         })
     return pd.DataFrame(rows)
 
-df = generate_mock_trends()
+def simulate_time_series():
+    base = np.random.randint(40, 100)
+    return [base + random.randint(-8, 12) for _ in range(12)]
 
-
-# ------------------------------------------------------
-# SIMPLE STREAMLIT TREND CARD (NO HTML)
-# ------------------------------------------------------
-def trend_card(trend, growth, priority):
-    card = st.container()
-    with card:
-        st.subheader(f"🍯 {trend}")
-        st.write(f"**Growth:** {growth}%")
-        st.write(f"**Priority:** {priority}")
-
-        if st.button(f"View Details", key=f"{trend}_button"):
-            st.session_state.selected_trend = trend
-            st.experimental_rerun()
-
-
-# ------------------------------------------------------
-# INSIGHT CARD
-# ------------------------------------------------------
-def insight(title, text):
-    st.markdown(f"### {title}")
-    st.write(text)
-
+def render_insight_card(title, body):
+    st.markdown(f"""
+        <div class="insight-card">
+            <div class="insight-row">
+                <div class="honey-icon">🍯</div>
+                <div>
+                    <div class="insight-header">{title}</div>
+                    <div class="insight-body">{body}</div>
+                </div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
 # ------------------------------------------------------
-# TABS
+# BUILD TABS
 # ------------------------------------------------------
-tabs = st.tabs(["Quarterly Snapshot", "Trend Explorer", "Trend Deep Dive"])
-
+tabs = st.tabs([
+    "Quarterly Snapshot",
+    "Trend Explorer",
+    "Trend Deep Dive",
+    "Source Simulation",
+    "Recommendations"
+])
 
 # ------------------------------------------------------
-# TAB 1 — Quarterly Snapshot
+# TAB 1 — QUARTERLY SNAPSHOT
 # ------------------------------------------------------
 with tabs[0]:
     st.header("Quarterly Snapshot")
 
-    top_growing = df.sort_values("Growth %", ascending=False).head(5)
-    top_declining = df.sort_values("Growth %", ascending=True).head(5)
+    df = generate_mock_trends()
 
-    # Top 5 Growing
-    st.subheader("Top 5 Fastest Growing Trends")
-    rows = [top_growing.iloc[i:i+3] for i in range(0, len(top_growing), 3)]
-    for row in rows:
-        cols = st.columns(3)
-        for col, (_, t) in zip(cols, row.iterrows()):
-            with col:
-                trend_card(t["Trend"], t["Growth %"], t["Priority"])
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("High Priority", len(df[df["Priority"] == "High"]))
+    with col2:
+        st.metric("Medium Priority", len(df[df["Priority"] == "Medium"]))
+    with col3:
+        st.metric("Low Priority", len(df[df["Priority"] == "Low"]))
 
-    # Top 5 Declining
-    st.subheader("Top 5 Declining Trends")
-    rows = [top_declining.iloc[i:i+3] for i in range(0, len(top_declining), 3)]
-    for row in rows:
-        cols = st.columns(3)
-        for col, (_, t) in zip(cols, row.iterrows()):
-            with col:
-                trend_card(t["Trend"], t["Growth %"], t["Priority"])
-
+    st.write("")
+    st.dataframe(df, use_container_width=True)
 
 # ------------------------------------------------------
-# TAB 2 — Trend Explorer
+# TAB 2 — TREND EXPLORER
 # ------------------------------------------------------
 with tabs[1]:
-    st.header("Explore All Trends")
+    st.header("Explore Trends")
+    search = st.text_input("Search trends, ingredients, claims…")
 
-    rows = [df.iloc[i:i+3] for i in range(0, len(df), 3)]
-    for row in rows:
-        cols = st.columns(3)
-        for col, (_, t) in zip(cols, row.iterrows()):
-            with col:
-                trend_card(t["Trend"], t["Growth %"], t["Priority"])
+    filtered = df[df["Trend"].str.contains(search, case=False)] if search else df
 
+    st.dataframe(filtered, use_container_width=True)
 
 # ------------------------------------------------------
-# TAB 3 — Trend Deep Dive
+# TAB 3 — TREND DEEP DIVE (with Visual Insight Cards)
 # ------------------------------------------------------
 with tabs[2]:
     st.header("Trend Deep Dive")
 
-    selected = st.session_state.selected_trend or df["Trend"].iloc[0]
-    st.subheader(f"Selected Trend: {selected}")
+    trend = st.selectbox("Select a trend", df["Trend"])
 
-    insight(
-        "Why This Trend Matters",
-        f"'{selected}' is driven by consumer interest in natural, results-focused ingredients."
+    st.subheader("Visual Insights")
+
+    render_insight_card(
+        title="Why This Trend Matters",
+        body=f"""
+        The '{trend}' trend reflects a shift toward natural, gentle, 
+        and functional ingredients. Beauty consumers are increasingly 
+        searching for solutions aligned with simplicity and performance.
+        """
     )
 
-    insight(
-        "Consumer Need",
-        f"This trend aligns with hydration, barrier repair, and clean ingredient preferences."
+    render_insight_card(
+        title="Consumer Need",
+        body=f"""
+        Consumers prioritize hydration, barrier support, and multi-benefit 
+        care. '{trend}' connects strongly to holistic skin and lip wellness.
+        """
     )
 
-    insight(
-        "Opportunity for Burt’s Bees",
-        f"This trend connects strongly to Burt’s Bees’ nature-first positioning."
+    render_insight_card(
+        title="Opportunity for Burt’s Bees",
+        body=f"""
+        This trend aligns with Burt’s Bees' nature-powered heritage. 
+        Opportunities include ingredient-forward storytelling, 
+        limited editions, and category extensions.
+        """
     )
 
     st.subheader("Simulated Trend Trajectory")
-    st.line_chart(np.random.randint(50, 100, size=12))
+    st.line_chart(simulate_time_series())
+
+# ------------------------------------------------------
+# TAB 4 — SOURCE SIMULATION
+# ------------------------------------------------------
+with tabs[3]:
+    st.header("Simulated External Signals")
+
+    source = st.selectbox("Choose a source", [
+        "Spate (Search Trends)",
+        "Lux Motivebase (Conversation Themes)",
+        "Mintel (Claims & Innovation)",
+        "Meltwater (Social Buzz)"
+    ])
+
+    if st.button("Generate Simulation"):
+        st.success("AI output disabled — connect OpenAI API to activate.")
+
+# ------------------------------------------------------
+# TAB 5 — RECOMMENDATIONS
+# ------------------------------------------------------
+with tabs[4]:
+    st.header("Recommendations")
+
+    if st.button("Generate Innovation Recommendations"):
+        st.warning("AI disabled — enable OpenAI API key for insights.")
