@@ -12,26 +12,26 @@ BURTS_DARK = "#4A2C2A"
 BURTS_OFFWHITE = "#FFF8E7"
 BURTS_GOLD = "#DFAF2B"
 
+
 # ------------------------------------------------------
 # PAGE CONFIG
 # ------------------------------------------------------
 st.set_page_config(page_title="Burt’s Bees Trend Sensing Dashboard", layout="wide")
 
-# Initialize session state
 if "selected_trend" not in st.session_state:
     st.session_state.selected_trend = None
 
 
 # ------------------------------------------------------
-# GLOBAL STYLING
+# GLOBAL CSS (clean + simple)
 # ------------------------------------------------------
 st.markdown(f"""
     <style>
-
         body {{
             background-color: {BURTS_OFFWHITE};
         }}
 
+        /* Header */
         .header-bar {{
             background-color: {BURTS_YELLOW};
             padding: 16px;
@@ -47,52 +47,63 @@ st.markdown(f"""
             text-align: center;
         }}
 
-        /* HONEYCOMB HEXAGON STYLES */
-        .hex-grid {{
+        /* Trend Cards Grid */
+        .card-grid {{
             display: flex;
             flex-wrap: wrap;
-            width: 100%;
-            justify-content: center;
-            gap: 10px;
+            gap: 20px;
             margin-top: 20px;
         }}
 
-        .hex {{
-            width: 120px;
-            height: 70px;
+        .trend-card {{
             background-color: {BURTS_YELLOW};
-            position: relative;
-            margin: 35px 10px;
-            clip-path: polygon(
-                50% 0%, 
-                93% 25%, 
-                93% 75%, 
-                50% 100%, 
-                7% 75%, 
-                7% 25%
-            );
-            border: 3px solid {BURTS_RED};
+            border: 2px solid {BURTS_RED};
+            border-radius: 14px;
+            width: calc(33% - 20px);
+            padding: 16px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.08);
             cursor: pointer;
-            transition: transform 0.2s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            transition: transform 0.15s ease;
         }}
 
-        .hex:hover {{
-            transform: scale(1.08);
+        .trend-card:hover {{
+            transform: scale(1.03);
         }}
 
-        .hex p {{
-            text-align: center;
-            font-size: 14px;
+        .trend-title {{
+            font-size: 18px;
             font-weight: bold;
             color: {BURTS_DARK};
-            margin: 0;
-            padding: 0 5px;
+            margin-bottom: 8px;
         }}
 
-        /* Insight Cards */
+        .trend-metric {{
+            color: {BURTS_DARK};
+            font-size: 15px;
+            margin-bottom: 4px;
+        }}
+
+        .priority-pill {{
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }}
+
+        .High {{
+            background-color: {BURTS_RED};
+        }}
+        .Medium {{
+            background-color: {BURTS_GOLD};
+        }}
+        .Low {{
+            background-color: #ffe88a;
+            color: {BURTS_DARK};
+        }}
+
+        /* Insight cards */
         .insight-card {{
             background-color: {BURTS_YELLOW};
             border: 2px solid {BURTS_RED};
@@ -134,7 +145,7 @@ st.markdown(f"""
 
 
 # ------------------------------------------------------
-# HEADER BAR
+# Header Bar
 # ------------------------------------------------------
 st.markdown("""
 <div class="header-bar">
@@ -144,7 +155,7 @@ st.markdown("""
 
 
 # ------------------------------------------------------
-# HELPERS
+# Helper Functions
 # ------------------------------------------------------
 def generate_mock_trends():
     priorities = ["High", "Medium", "Low"]
@@ -160,27 +171,27 @@ def generate_mock_trends():
         rows.append({
             "Trend": t,
             "Priority": random.choice(priorities),
-            "Growth %": round(random.uniform(5, 60), 2)
+            "Growth %": round(random.uniform(-20, 60), 2)
         })
     return pd.DataFrame(rows)
 
 
-def hexagon_card(label, growth):
-    """Create a clickable hexagon via HTML."""
-    safe_label = label.replace(" ", "_")
-
-    html = f"""
-        /?trend={safe_label}#deepdive
-            <p>{label}<br>{growth}%</p>
+def render_trend_card(trend, growth, priority):
+    """Produce a card in HTML."""
+    safe = trend.replace(" ", "_")
+    return f"""
+        /?trend={safe}#deepdive
+            <div class="trend-title">🍯 {trend}</div>
+            <div class="trend-metric">Growth: {growth}%</div>
+            <div class="priority-pill {priority}">{priority}</div>
         </div>
     """
-    return html
 
 
-def render_hex_grid(df):
-    html = '<div class="hex-grid">'
+def render_card_grid(df):
+    html = '<div class="card-grid">'
     for _, row in df.iterrows():
-        html += hexagon_card(row["Trend"], row["Growth %"])
+        html += render_trend_card(row["Trend"], row["Growth %"], row["Priority"])
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
@@ -200,18 +211,19 @@ def render_insight_card(title, body):
 
 
 # ------------------------------------------------------
-# TABS
+# TAB SETUP
 # ------------------------------------------------------
+df = generate_mock_trends()
+
 tabs = st.tabs([
     "Quarterly Snapshot",
     "Trend Explorer",
     "Trend Deep Dive"
 ])
 
-df = generate_mock_trends()
 
 # ------------------------------------------------------
-# TAB 1 — QUARTERLY SNAPSHOT
+# TAB 1 — Quarterly Snapshot
 # ------------------------------------------------------
 with tabs[0]:
     st.header("Quarterly Snapshot")
@@ -220,27 +232,27 @@ with tabs[0]:
     top_declining = df.sort_values("Growth %", ascending=True).head(5)
 
     st.subheader("Top 5 Fastest Growing Trends")
-    render_hex_grid(top_growing)
+    render_card_grid(top_growing)
 
     st.subheader("Top 5 Declining Trends")
-    render_hex_grid(top_declining)
+    render_card_grid(top_declining)
+
 
 # ------------------------------------------------------
-# TAB 2 — TREND EXPLORER
+# TAB 2 — Trend Explorer
 # ------------------------------------------------------
 with tabs[1]:
     st.header("Explore All Trends")
-    render_hex_grid(df)
+    render_card_grid(df)
 
 
 # ------------------------------------------------------
-# DEEP DIVE TAB
+# TAB 3 — Trend Deep Dive
 # ------------------------------------------------------
 with tabs[2]:
     st.markdown('<a name="deepdive"></a>', unsafe_allow_html=True)
     st.header("Trend Deep Dive")
 
-    # Detect selected trend via URL param
     trend_param = st.query_params.get("trend", [None])[0]
     if trend_param:
         st.session_state.selected_trend = trend_param.replace("_", " ")
@@ -249,20 +261,19 @@ with tabs[2]:
 
     st.subheader(f"Selected Trend: {selected}")
 
-    # Insight Cards
     render_insight_card(
         "Why This Trend Matters",
-        f"'{selected}' reflects a growing shift toward performance-focused natural ingredients."
+        f"'{selected}' continues to rise as consumers prioritize effective, natural ingredients."
     )
 
     render_insight_card(
         "Consumer Need",
-        f"Consumers seek hydration, barrier repair, and clean ingredients — all aligned with '{selected}'."
+        f"'{selected}' connects to core needs: hydration, simplicity, and skin-first wellness."
     )
 
     render_insight_card(
         "Opportunity for Burt’s Bees",
-        f"Strong fit for nature-forward innovation. Consider concept testing around '{selected}'."
+        f"Leverage '{selected}' in future innovations, limited editions, and ingredient-forward storytelling."
     )
 
     st.subheader("Simulated Trend Trajectory")
