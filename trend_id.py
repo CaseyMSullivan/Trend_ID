@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 # ------------------------------------------------------
-# BURT'S BEES BRAND COLORS (from uploaded logo image)
+# BURT'S BEES BRAND COLORS
 # ------------------------------------------------------
 BURTS_YELLOW = "#F4C32D"
 BURTS_RED = "#C51F25"
@@ -13,13 +13,22 @@ BURTS_OFFWHITE = "#FFF8E7"
 BURTS_GOLD = "#DFAF2B"
 
 # ------------------------------------------------------
-# STREAMLIT BASE STYLING
+# PAGE CONFIG
 # ------------------------------------------------------
-st.set_page_config(page_title="Burt’s Bees Trend Sensing", layout="wide")
+st.set_page_config(page_title="Burt’s Bees Trend Sensing Dashboard", layout="wide")
 
+# Initialize session state
+if "selected_trend" not in st.session_state:
+    st.session_state.selected_trend = None
+
+
+# ------------------------------------------------------
+# GLOBAL STYLING
+# ------------------------------------------------------
 st.markdown(f"""
     <style>
-        .main {{
+
+        body {{
             background-color: {BURTS_OFFWHITE};
         }}
 
@@ -38,17 +47,52 @@ st.markdown(f"""
             text-align: center;
         }}
 
-        h1, h2, h3, h4 {{
-            color: {BURTS_DARK} !important;
+        /* HONEYCOMB HEXAGON STYLES */
+        .hex-grid {{
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
         }}
 
-        .stMetric {{
-            background-color: {BURTS_YELLOW}50;
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid {BURTS_RED}20;
+        .hex {{
+            width: 120px;
+            height: 70px;
+            background-color: {BURTS_YELLOW};
+            position: relative;
+            margin: 35px 10px;
+            clip-path: polygon(
+                50% 0%, 
+                93% 25%, 
+                93% 75%, 
+                50% 100%, 
+                7% 75%, 
+                7% 25%
+            );
+            border: 3px solid {BURTS_RED};
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }}
 
+        .hex:hover {{
+            transform: scale(1.08);
+        }}
+
+        .hex p {{
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: {BURTS_DARK};
+            margin: 0;
+            padding: 0 5px;
+        }}
+
+        /* Insight Cards */
         .insight-card {{
             background-color: {BURTS_YELLOW};
             border: 2px solid {BURTS_RED};
@@ -84,17 +128,13 @@ st.markdown(f"""
         .honey-icon {{
             font-size: 32px;
         }}
+
     </style>
 """, unsafe_allow_html=True)
 
-# ------------------------------------------------------
-# OPTIONAL: BURT'S BEES LOGO
-# ------------------------------------------------------
-# Place the logo in the same folder as app.py and uncomment this:
-# st.image("burtsbees_logo.png", width=160)
 
 # ------------------------------------------------------
-# Header Bar
+# HEADER BAR
 # ------------------------------------------------------
 st.markdown("""
 <div class="header-bar">
@@ -102,8 +142,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+
 # ------------------------------------------------------
-# HELPER FUNCTIONS
+# HELPERS
 # ------------------------------------------------------
 def generate_mock_trends():
     priorities = ["High", "Medium", "Low"]
@@ -119,14 +160,30 @@ def generate_mock_trends():
         rows.append({
             "Trend": t,
             "Priority": random.choice(priorities),
-            "Growth %": round(random.uniform(5, 60), 2),
-            "QoQ Change": random.choice(["Increasing", "Stable", "Declining"])
+            "Growth %": round(random.uniform(5, 60), 2)
         })
     return pd.DataFrame(rows)
 
-def simulate_time_series():
-    base = np.random.randint(40, 100)
-    return [base + random.randint(-8, 12) for _ in range(12)]
+
+def hexagon_card(label, growth):
+    """Create a clickable hexagon via HTML."""
+    safe_label = label.replace(" ", "_")
+
+    html = f"""
+        /?trend={safe_label}#deepdive
+            <p>{label}<br>{growth}%</p>
+        </div>
+    """
+    return html
+
+
+def render_hex_grid(df):
+    html = '<div class="hex-grid">'
+    for _, row in df.iterrows():
+        html += hexagon_card(row["Trend"], row["Growth %"])
+    html += "</div>"
+    st.markdown(html, unsafe_allow_html=True)
+
 
 def render_insight_card(title, body):
     st.markdown(f"""
@@ -141,16 +198,17 @@ def render_insight_card(title, body):
         </div>
     """, unsafe_allow_html=True)
 
+
 # ------------------------------------------------------
-# BUILD TABS
+# TABS
 # ------------------------------------------------------
 tabs = st.tabs([
     "Quarterly Snapshot",
     "Trend Explorer",
-    "Trend Deep Dive",
-    "Source Simulation",
-    "Recommendations"
+    "Trend Deep Dive"
 ])
+
+df = generate_mock_trends()
 
 # ------------------------------------------------------
 # TAB 1 — QUARTERLY SNAPSHOT
@@ -158,90 +216,54 @@ tabs = st.tabs([
 with tabs[0]:
     st.header("Quarterly Snapshot")
 
-    df = generate_mock_trends()
+    top_growing = df.sort_values("Growth %", ascending=False).head(5)
+    top_declining = df.sort_values("Growth %", ascending=True).head(5)
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("High Priority", len(df[df["Priority"] == "High"]))
-    with col2:
-        st.metric("Medium Priority", len(df[df["Priority"] == "Medium"]))
-    with col3:
-        st.metric("Low Priority", len(df[df["Priority"] == "Low"]))
+    st.subheader("Top 5 Fastest Growing Trends")
+    render_hex_grid(top_growing)
 
-    st.write("")
-    st.dataframe(df, use_container_width=True)
+    st.subheader("Top 5 Declining Trends")
+    render_hex_grid(top_declining)
 
 # ------------------------------------------------------
 # TAB 2 — TREND EXPLORER
 # ------------------------------------------------------
 with tabs[1]:
-    st.header("Explore Trends")
-    search = st.text_input("Search trends, ingredients, claims…")
+    st.header("Explore All Trends")
+    render_hex_grid(df)
 
-    filtered = df[df["Trend"].str.contains(search, case=False)] if search else df
-
-    st.dataframe(filtered, use_container_width=True)
 
 # ------------------------------------------------------
-# TAB 3 — TREND DEEP DIVE (with Visual Insight Cards)
+# DEEP DIVE TAB
 # ------------------------------------------------------
 with tabs[2]:
+    st.markdown('<a name="deepdive"></a>', unsafe_allow_html=True)
     st.header("Trend Deep Dive")
 
-    trend = st.selectbox("Select a trend", df["Trend"])
+    # Detect selected trend via URL param
+    trend_param = st.query_params.get("trend", [None])[0]
+    if trend_param:
+        st.session_state.selected_trend = trend_param.replace("_", " ")
 
-    st.subheader("Visual Insights")
+    selected = st.session_state.selected_trend or df["Trend"].iloc[0]
 
+    st.subheader(f"Selected Trend: {selected}")
+
+    # Insight Cards
     render_insight_card(
-        title="Why This Trend Matters",
-        body=f"""
-        The '{trend}' trend reflects a shift toward natural, gentle, 
-        and functional ingredients. Beauty consumers are increasingly 
-        searching for solutions aligned with simplicity and performance.
-        """
+        "Why This Trend Matters",
+        f"'{selected}' reflects a growing shift toward performance-focused natural ingredients."
     )
 
     render_insight_card(
-        title="Consumer Need",
-        body=f"""
-        Consumers prioritize hydration, barrier support, and multi-benefit 
-        care. '{trend}' connects strongly to holistic skin and lip wellness.
-        """
+        "Consumer Need",
+        f"Consumers seek hydration, barrier repair, and clean ingredients — all aligned with '{selected}'."
     )
 
     render_insight_card(
-        title="Opportunity for Burt’s Bees",
-        body=f"""
-        This trend aligns with Burt’s Bees' nature-powered heritage. 
-        Opportunities include ingredient-forward storytelling, 
-        limited editions, and category extensions.
-        """
+        "Opportunity for Burt’s Bees",
+        f"Strong fit for nature-forward innovation. Consider concept testing around '{selected}'."
     )
 
     st.subheader("Simulated Trend Trajectory")
-    st.line_chart(simulate_time_series())
-
-# ------------------------------------------------------
-# TAB 4 — SOURCE SIMULATION
-# ------------------------------------------------------
-with tabs[3]:
-    st.header("Simulated External Signals")
-
-    source = st.selectbox("Choose a source", [
-        "Spate (Search Trends)",
-        "Lux Motivebase (Conversation Themes)",
-        "Mintel (Claims & Innovation)",
-        "Meltwater (Social Buzz)"
-    ])
-
-    if st.button("Generate Simulation"):
-        st.success("AI output disabled — connect OpenAI API to activate.")
-
-# ------------------------------------------------------
-# TAB 5 — RECOMMENDATIONS
-# ------------------------------------------------------
-with tabs[4]:
-    st.header("Recommendations")
-
-    if st.button("Generate Innovation Recommendations"):
-        st.warning("AI disabled — enable OpenAI API key for insights.")
+    st.line_chart(np.random.randint(50, 100, size=12))
