@@ -4,14 +4,9 @@ import numpy as np
 import random
 
 # ------------------------------------------------------
-# BRAND COLORS
+# BRAND COLORS (used only for emojis & headers)
 # ------------------------------------------------------
-BURTS_YELLOW = "#F4C32D"
 BURTS_RED = "#C51F25"
-BURTS_DARK = "#4A2C2A"
-BURTS_OFFWHITE = "#FFF8E7"
-BURTS_GOLD = "#DFAF2B"
-BURTS_LIGHT = "#FFEFAE"
 
 # ------------------------------------------------------
 # PAGE CONFIG
@@ -21,29 +16,22 @@ st.set_page_config(page_title="Burt’s Bees Trend Sensing Dashboard", layout="w
 if "selected_trend" not in st.session_state:
     st.session_state.selected_trend = None
 
+
 # ------------------------------------------------------
 # HEADER
 # ------------------------------------------------------
 st.markdown(
     f"""
-    <div style="
-        background-color:{BURTS_YELLOW};
-        padding:20px;
-        border-radius:12px;
-        border:3px solid {BURTS_RED};
-        text-align:center;
-        margin-bottom:25px;
-    ">
-        <span style="color:{BURTS_RED}; font-size:32px; font-weight:800;">
-            Burt’s Bees Trend Sensing Dashboard
-        </span>
-    </div>
+    <h1 style="text-align:center; color:{BURTS_RED};">
+        Burt’s Bees Trend Sensing Dashboard
+    </h1>
     """,
     unsafe_allow_html=True
 )
 
+
 # ------------------------------------------------------
-# DUMMY DATA
+# MOCK DATA
 # ------------------------------------------------------
 def generate_mock_trends():
     priorities = ["High", "Medium", "Low"]
@@ -65,92 +53,28 @@ def generate_mock_trends():
 
 df = generate_mock_trends()
 
+
 # ------------------------------------------------------
-# TREND CARD (safe + works in Streamlit)
+# SIMPLE STREAMLIT TREND CARD (NO HTML)
 # ------------------------------------------------------
-def trend_card(label, growth, priority):
-    colors = {
-        "High": BURTS_RED,
-        "Medium": BURTS_GOLD,
-        "Low": BURTS_LIGHT
-    }
-    border_color = colors[priority]
+def trend_card(trend, growth, priority):
+    card = st.container()
+    with card:
+        st.subheader(f"🍯 {trend}")
+        st.write(f"**Growth:** {growth}%")
+        st.write(f"**Priority:** {priority}")
 
-    card_html = f"""
-    <div style="
-        background-color:{BURTS_YELLOW};
-        border:3px solid {border_color};
-        border-radius:12px;
-        padding:18px;
-        text-align:center;
-        box-shadow:0px 4px 8px rgba(0,0,0,0.10);
-    ">
-        <div style="font-size:20px; font-weight:700; color:{BURTS_DARK};">
-            🍯 {label}
-        </div>
-
-        <div style="font-size:16px; margin-top:8px; color:{BURTS_DARK};">
-            Growth: {growth}%
-        </div>
-
-        <div style="
-            margin-top:10px;
-            display:inline-block;
-            background-color:{border_color};
-            padding:4px 12px;
-            border-radius:20px;
-            color:white;
-            font-size:12px;
-            font-weight:600;
-        ">
-            {priority}
-        </div>
-    </div>
-    """
-
-    # Render
-    st.markdown(card_html, unsafe_allow_html=True)
-
-    # Button below card (Streamlit-safe way of clicking)
-    if st.button(f"View Details: {label}", key=label):
-        st.session_state.selected_trend = label
-        st.experimental_rerun()
+        if st.button(f"View Details", key=f"{trend}_button"):
+            st.session_state.selected_trend = trend
+            st.experimental_rerun()
 
 
 # ------------------------------------------------------
 # INSIGHT CARD
 # ------------------------------------------------------
-def insight_card(title, body):
-    st.markdown(
-        f"""
-        <div style="
-            background-color:{BURTS_YELLOW};
-            border:2px solid {BURTS_RED};
-            padding:16px;
-            border-radius:12px;
-            margin-top:15px;
-            box-shadow:0px 3px 6px rgba(0,0,0,0.10);
-        ">
-            <div style="
-                background-color:{BURTS_RED};
-                color:white;
-                padding:6px 12px;
-                display:inline-block;
-                border-radius:8px;
-                font-weight:700;
-                font-size:18px;
-                margin-bottom:8px;
-            ">
-                {title}
-            </div>
-
-            <div style="font-size:16px; color:{BURTS_DARK}; line-height:1.4;">
-                {body}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+def insight(title, text):
+    st.markdown(f"### {title}")
+    st.write(text)
 
 
 # ------------------------------------------------------
@@ -168,21 +92,23 @@ with tabs[0]:
     top_growing = df.sort_values("Growth %", ascending=False).head(5)
     top_declining = df.sort_values("Growth %", ascending=True).head(5)
 
+    # Top 5 Growing
     st.subheader("Top 5 Fastest Growing Trends")
     rows = [top_growing.iloc[i:i+3] for i in range(0, len(top_growing), 3)]
     for row in rows:
         cols = st.columns(3)
-        for col, (_, trend) in zip(cols, row.iterrows()):
+        for col, (_, t) in zip(cols, row.iterrows()):
             with col:
-                trend_card(trend["Trend"], trend["Growth %"], trend["Priority"])
+                trend_card(t["Trend"], t["Growth %"], t["Priority"])
 
+    # Top 5 Declining
     st.subheader("Top 5 Declining Trends")
     rows = [top_declining.iloc[i:i+3] for i in range(0, len(top_declining), 3)]
     for row in rows:
         cols = st.columns(3)
-        for col, (_, trend) in zip(cols, row.iterrows()):
+        for col, (_, t) in zip(cols, row.iterrows()):
             with col:
-                trend_card(trend["Trend"], trend["Growth %"], trend["Priority"])
+                trend_card(t["Trend"], t["Growth %"], t["Priority"])
 
 
 # ------------------------------------------------------
@@ -194,9 +120,9 @@ with tabs[1]:
     rows = [df.iloc[i:i+3] for i in range(0, len(df), 3)]
     for row in rows:
         cols = st.columns(3)
-        for col, (_, trend) in zip(cols, row.iterrows()):
+        for col, (_, t) in zip(cols, row.iterrows()):
             with col:
-                trend_card(trend["Trend"], trend["Growth %"], trend["Priority"])
+                trend_card(t["Trend"], t["Growth %"], t["Priority"])
 
 
 # ------------------------------------------------------
@@ -208,19 +134,19 @@ with tabs[2]:
     selected = st.session_state.selected_trend or df["Trend"].iloc[0]
     st.subheader(f"Selected Trend: {selected}")
 
-    insight_card(
+    insight(
         "Why This Trend Matters",
-        f"'{selected}' aligns with shifts toward natural ingredient-led performance and skin wellness."
+        f"'{selected}' is driven by consumer interest in natural, results-focused ingredients."
     )
 
-    insight_card(
+    insight(
         "Consumer Need",
-        f"Consumers prioritize hydration, repair, and simplicity—key drivers behind the '{selected}' trend."
+        f"This trend aligns with hydration, barrier repair, and clean ingredient preferences."
     )
 
-    insight_card(
+    insight(
         "Opportunity for Burt’s Bees",
-        f"'{selected}' fits Burt’s Bees’ nature-first portfolio. Consider limited editions, flavor stories, or format innovation."
+        f"This trend connects strongly to Burt’s Bees’ nature-first positioning."
     )
 
     st.subheader("Simulated Trend Trajectory")
