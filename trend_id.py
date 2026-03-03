@@ -79,12 +79,12 @@ st.markdown(f"""
 
         .honey-icon {{
             font-size: 32px;
-        }
+        }}
 
-        div[data-testid="stMetric"] > label {
+        div[data-testid="stMetric"] > label {{
             font-size: 24px !important;
             font-weight: bold !important;
-        }
+        }}
     </style>
 """, unsafe_allow_html=True)
 
