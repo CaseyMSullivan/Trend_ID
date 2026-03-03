@@ -3,18 +3,14 @@ import pandas as pd
 import numpy as np
 import random
 
-# ------------------------------------------------------
-# BURT'S BEES BRAND COLORS (from uploaded logo image)
-# ------------------------------------------------------
+# Burt's Bees colors
 BURTS_YELLOW = "#F4C32D"
 BURTS_RED = "#C51F25"
 BURTS_DARK = "#4A2C2A"
 BURTS_OFFWHITE = "#FFF8E7"
 BURTS_GOLD = "#DFAF2B"
 
-# ------------------------------------------------------
-# STREAMLIT BASE STYLING
-# ------------------------------------------------------
+
 st.set_page_config(page_title="Burt’s Bees Trend Sensing Dashboard", layout="wide")
 
 st.markdown(f"""
@@ -87,24 +83,14 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# ------------------------------------------------------
-# OPTIONAL: BURT'S BEES LOGO
-# ------------------------------------------------------
-# Place the logo in the same folder as app.py and uncomment this:
-# st.image("burtsbees_logo.png", width=160)
-
-# ------------------------------------------------------
-# Header Bar
-# ------------------------------------------------------
+# Header
 st.markdown("""
 <div class="header-bar">
     <div class="header-title">Burt’s Bees Trend Sensing Dashboard</div>
 </div>
 """, unsafe_allow_html=True)
 
-# ------------------------------------------------------
-# HELPER FUNCTIONS
-# ------------------------------------------------------
+# Helper Functions
 def generate_mock_trends():
     priorities = ["High", "Medium", "Low"]
     trends = [
@@ -141,9 +127,8 @@ def render_insight_card(title, body):
         </div>
     """, unsafe_allow_html=True)
 
-# ------------------------------------------------------
-# BUILD TABS
-# ------------------------------------------------------
+
+# Tabs
 tabs = st.tabs([
     "Quarterly Snapshot",
     "Trend Explorer",
@@ -152,11 +137,7 @@ tabs = st.tabs([
     "Recommendations"
 ])
 
-# ------------------------------------------------------
-# TAB 1 — QUARTERLY SNAPSHOT
-# ------------------------------------------------------
-# TAB 1 — QUARTERLY SNAPSHOT
-# ------------------------------------------------------
+# Tab 1: Quarterly snapshot
 with tabs[0]:
     st.header("Quarterly Snapshot")
 
@@ -174,7 +155,7 @@ with tabs[0]:
 
     st.write("")
 
-    # High Priority Section
+    # High priority
     st.subheader("High Priority")
     for _, row in df[df["Priority"] == "High"].iterrows():
         html = '<div style="background-color:' + BURTS_YELLOW + '; padding: 12px; border: 2px solid ' + BURTS_RED + '; border-radius: 8px; margin-bottom: 12px;">' \
@@ -184,7 +165,7 @@ with tabs[0]:
         with st.expander("Details"):
             st.write("Placeholder details for now, to be updated later.")
 
-    # Medium Priority Section
+    # Medium priority
     st.subheader("Medium Priority")
     for _, row in df[df["Priority"] == "Medium"].iterrows():
         html = '<div style="background-color:' + BURTS_YELLOW + '; padding: 12px; border: 2px solid ' + BURTS_RED + '; border-radius: 8px; margin-bottom: 12px;">' \
@@ -194,7 +175,7 @@ with tabs[0]:
         with st.expander("Details"):
             st.write("Placeholder details for now, to be updated later.")
 
-    # Low Priority Section
+    # Low priority
     st.subheader("Low Priority")
     for _, row in df[df["Priority"] == "Low"].iterrows():
         html = '<div style="background-color:' + BURTS_YELLOW + '; padding: 12px; border: 2px solid ' + BURTS_RED + '; border-radius: 8px; margin-bottom: 12px;">' \
@@ -205,9 +186,8 @@ with tabs[0]:
             st.write("Placeholder details for now, to be updated later.")
 
 
-# ------------------------------------------------------
-# TAB 2 — TREND EXPLORER
-# ------------------------------------------------------
+
+# Tab 2: Trend explorer
 with tabs[1]:
     st.header("Explore Trends")
     search = st.text_input("Search trends, ingredients, claims…")
@@ -216,9 +196,8 @@ with tabs[1]:
 
     st.dataframe(filtered, use_container_width=True)
 
-# ------------------------------------------------------
+
 # TAB 3 — TREND DEEP DIVE (with Visual Insight Cards)
-# ------------------------------------------------------
 with tabs[2]:
     st.header("Trend Deep Dive")
 
