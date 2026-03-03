@@ -146,30 +146,15 @@ with tabs[0]:
 
     # Show counts for each priority
     col1, col2, col3 = st.columns(3)
-    
     with col1:
-        st.markdown(
-            f"<span style='font-size:24px; font-weight:bold;'>🍯 High Priority</span>",
-            unsafe_allow_html=True
-        )
-        st.metric("", len(df[df["Priority"] == "High"]))
-    
+        st.metric("🍯 High Priority", len(df[df["Priority"] == "High"]))
     with col2:
-        st.markdown(
-            f"<span style='font-size:24px; font-weight:bold;'>🍯 Medium Priority</span>",
-            unsafe_allow_html=True
-        )
-        st.metric("", len(df[df["Priority"] == "Medium"]))
-    
+        st.metric("🍯 Medium Priority", len(df[df["Priority"] == "Medium"]))
     with col3:
-        st.markdown(
-            f"<span style='font-size:24px; font-weight:bold;'>🍯 Low Priority</span>",
-            unsafe_allow_html=True
-        )
-        st.metric("", len(df[df["Priority"] == "Low"]))
-
+        st.metric("🍯 Low Priority", len(df[df["Priority"] == "Low"]))
 
     st.write("")
+
 
     # High priority
     st.subheader("High Priority")
