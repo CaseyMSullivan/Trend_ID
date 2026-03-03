@@ -155,17 +155,51 @@ tabs = st.tabs([
 # ------------------------------------------------------
 # TAB 1 — QUARTERLY SNAPSHOT
 # ------------------------------------------------------
+# TAB 1 — QUARTERLY SNAPSHOT
+# ------------------------------------------------------
 with tabs[0]:
     st.header("Quarterly Snapshot")
-    # Generate data and filter high priority items
+
+    # Generate trends data
     df = generate_mock_trends()
-    high_df = df[df["Priority"] == "High"]
+
+    # Show counts for each priority
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("High Priority", len(df[df["Priority"] == "High"]))
+    with col2:
+        st.metric("Medium Priority", len(df[df["Priority"] == "Medium"]))
+    with col3:
+        st.metric("Low Priority", len(df[df["Priority"] == "Low"]))
+
     st.write("")
+
+    # High Priority Section
     st.subheader("High Priority")
-    # Display each high priority trend as a themed box with an expander
-    for _, row in high_df.iterrows():
+    for _, row in df[df["Priority"] == "High"].iterrows():
         html = '<div style="background-color:' + BURTS_YELLOW + '; padding: 12px; border: 2px solid ' + BURTS_RED + '; border-radius: 8px; margin-bottom: 12px;">' \
-               + '<b>' + str(row["Trend"]) + '</b><br>Growth: ' + str(row["Growth %"]) + '%<br>QoQ Change: ' + str(row["QoQ Change"]) + '</div>'
+              + '<span style="color:' + BURTS_RED + '; font-size:20px; font-weight:bold;">' + str(row["Trend"]) + '</span><br>Growth: ' \
+              + str(row["Growth %"]) + '%<br>QoQ Change: ' + str(row["QoQ Change"]) + '</div>'
+        st.markdown(html, unsafe_allow_html=True)
+        with st.expander("Details"):
+            st.write("Placeholder details for now, to be updated later.")
+
+    # Medium Priority Section
+    st.subheader("Medium Priority")
+    for _, row in df[df["Priority"] == "Medium"].iterrows():
+        html = '<div style="background-color:' + BURTS_YELLOW + '; padding: 12px; border: 2px solid ' + BURTS_RED + '; border-radius: 8px; margin-bottom: 12px;">' \
+              + '<span style="color:' + BURTS_RED + '; font-size:20px; font-weight:bold;">' + str(row["Trend"]) + '</span><br>Growth: ' \
+              + str(row["Growth %"]) + '%<br>QoQ Change: ' + str(row["QoQ Change"]) + '</div>'
+        st.markdown(html, unsafe_allow_html=True)
+        with st.expander("Details"):
+            st.write("Placeholder details for now, to be updated later.")
+
+    # Low Priority Section
+    st.subheader("Low Priority")
+    for _, row in df[df["Priority"] == "Low"].iterrows():
+        html = '<div style="background-color:' + BURTS_YELLOW + '; padding: 12px; border: 2px solid ' + BURTS_RED + '; border-radius: 8px; margin-bottom: 12px;">' \
+              + '<span style="color:' + BURTS_RED + '; font-size:20px; font-weight:bold;">' + str(row["Trend"]) + '</span><br>Growth: ' \
+              + str(row["Growth %"]) + '%<br>QoQ Change: ' + str(row["QoQ Change"]) + '</div>'
         st.markdown(html, unsafe_allow_html=True)
         with st.expander("Details"):
             st.write("Placeholder details for now, to be updated later.")
