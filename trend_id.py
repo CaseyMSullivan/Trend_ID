@@ -147,11 +147,11 @@ with tabs[0]:
     # Show counts for each priority
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("High Priority", len(df[df["Priority"] == "High"]))
+        st.metric("🍯 High Priority", len(df[df["Priority"] == "High"]))
     with col2:
-        st.metric("Medium Priority", len(df[df["Priority"] == "Medium"]))
+        st.metric("🍯 Medium Priority", len(df[df["Priority"] == "Medium"]))
     with col3:
-        st.metric("Low Priority", len(df[df["Priority"] == "Low"]))
+        st.metric("🍯 Low Priority", len(df[df["Priority"] == "Low"]))
 
     st.write("")
 
@@ -197,7 +197,7 @@ with tabs[1]:
     st.dataframe(filtered, use_container_width=True)
 
 
-# TAB 3 — TREND DEEP DIVE (with Visual Insight Cards)
+# Tab 3: Trend deep dive
 with tabs[2]:
     st.header("Trend Deep Dive")
 
@@ -234,9 +234,8 @@ with tabs[2]:
     st.subheader("Simulated Trend Trajectory")
     st.line_chart(simulate_time_series())
 
-# ------------------------------------------------------
-# TAB 4 — SOURCE SIMULATION
-# ------------------------------------------------------
+
+# Tab 4: Source signals
 with tabs[3]:
     st.header("Simulated External Signals")
 
@@ -250,9 +249,7 @@ with tabs[3]:
     if st.button("Generate Simulation"):
         st.success("AI output disabled — connect OpenAI API to activate.")
 
-# ------------------------------------------------------
-# TAB 5 — RECOMMENDATIONS
-# ------------------------------------------------------
+# Tab 5: Reccomendations
 with tabs[4]:
     st.header("Recommendations")
 
