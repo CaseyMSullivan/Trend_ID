@@ -146,6 +146,7 @@ with tabs[0]:
 
     # Show counts for each priority
     col1, col2, col3 = st.columns(3)
+    
     with col1:
         st.markdown(
             f"<span style='font-size:24px; font-weight:bold;'>🍯 High Priority</span>",
