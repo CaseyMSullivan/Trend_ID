@@ -1,9 +1,8 @@
-# OpenAI Validation Module
 import openai
 import json
 
+# Classifying each term using OpenAI.
 def validate_term(term: str) -> dict:
-    # Classify a term using OpenAI into beauty_trend, generic, or fad.
     if not openai.api_key:
         return {'classification': 'generic', 'reason': 'No OpenAI key provided.'}
     prompt = f'''You are a beauty market analyst. Classify the term '{term}' into:
