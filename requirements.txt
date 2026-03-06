@@ -1,0 +1,9 @@
+streamlit
+pandas
+numpy
+openai
+google-cloud-storage
+PyPDF2
+python-docx
+python-pptx
+tqdm
