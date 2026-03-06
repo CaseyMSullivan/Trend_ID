@@ -1,23 +1,22 @@
-# Text Processing Module
 from collections import Counter
 import re
 from typing import Dict
 
-# Stopwords
+# Stopwords.
 STOPWORDS = set([
     'the','and','that','with','this','from','they','your','have','will','just',
     'but','also','more','into','when','what','for','their','not','you','can',
     'about','like','use','using','are','has','its','we','our','in','on','of','as','at','or'
 ])
 
+# Tokenizing the text into lowercase words length longer than 4 and removing the stopwords.
 def tokenize(text: str) -> list:
-    # Tokenize text into lowercase alphabetic words length >= 4 and remove stopwords.
     text = text.lower()
     tokens = re.findall(r'\b[a-z]{4,}\b', text)
     return [t for t in tokens if t not in STOPWORDS]
 
+# Computing the term frequency, document frequency, recent/earlier splitting.
 def compute_trend_scores(docs: Dict[str, str]):
-    # Compute term frequency, document frequency, recent/earlier splitting.
     term_freq = Counter()
     term_doc_count = Counter()
     doc_names = sorted(docs.keys())
@@ -36,8 +35,8 @@ def compute_trend_scores(docs: Dict[str, str]):
             earlier_tokens.update(tokens)
     return term_freq, term_doc_count, recent_tokens, earlier_tokens
 
+# Terms into high, medium, low and fads.
 def classify_trends(term_freq, term_doc_count, recent_tokens, earlier_tokens, total_docs: int):
-    # Classify terms into high, medium, low and find fads.
     high = {}
     medium = {}
     low = {}
